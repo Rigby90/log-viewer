@@ -62,12 +62,27 @@ class Log
             $filteredLines = [];
             foreach ($lines as $line) {
                 $shouldExclude = false;
+
+                // Remove double slashes.
+                $line = str_replace('\\\\', '\\', $line);
+                // Normalize line slashes
+                $line = (DIRECTORY_SEPARATOR === '\\')
+                    ? str_replace('/', '\\', $line)
+                    : str_replace('\\', '/', $line);
+
                 foreach ($excludes as $excludePattern) {
-                    if (str_contains($line, $excludePattern)) {
+                    // Normalize exclude slashes
+                    $excludePattern = (DIRECTORY_SEPARATOR === '\\')
+                        ? str_replace('/', '\\', $excludePattern)
+                        : str_replace('\\', '/', $excludePattern);
+                    if (Str::contains($line, $excludePattern)) {
                         $shouldExclude = true;
                         break;
                     }
                 }
+
+                // Remove base path from line.
+                $line = str_replace(base_path(), '', $line);
 
                 if ($shouldExclude && end($filteredLines) !== $emptyLineCharacter) {
                     $filteredLines[] = $emptyLineCharacter;
